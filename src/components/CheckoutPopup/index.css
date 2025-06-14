@@ -1,0 +1,100 @@
+/* Popup overlay covers the entire screen */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* The main popup box */
+.popup-content {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+/* Close button top right corner */
+.popup-close-button {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #475569;
+}
+
+/* Heading */
+.popup-content h3 {
+  margin-bottom: 16px;
+  font-size: 22px;
+  color: #1e293b;
+}
+
+/* Form layout */
+.popup-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Individual payment label styles */
+.popup-content form label {
+  font-size: 16px;
+  color: #334155;
+  cursor: not-allowed;
+}
+
+.popup-content form input[type="radio"]:enabled + span {
+  cursor: pointer;
+}
+
+.popup-content form input[type="radio"]:enabled {
+  cursor: pointer;
+}
+
+/* Payment details */
+.popup-content p {
+  font-size: 16px;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+/* Confirm Order button */
+.confirm-button {
+  background-color: #0b69ff;
+  color: white;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.confirm-button:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Success message */
+.success-text {
+  margin-top: 16px;
+  font-size: 16px;
+  color: #16a34a;
+  font-weight: 600;
+  text-align: center;
+}

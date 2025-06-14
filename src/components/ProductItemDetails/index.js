@@ -1,9 +1,10 @@
-// ProductItemDetails.js
 import React, {Component} from 'react'
-import {Redirect} from 'react-router-dom' // For redirecting to the login route or products route
+import {Redirect} from 'react-router-dom'
 import Cookies from 'js-cookie'
 import Loader from 'react-loader-spinner'
-import Header from '../Header' // Assuming Header is a navigation bar component
+import {BsPlusSquare, BsDashSquare} from 'react-icons/bs'
+
+import Header from '../Header'
 import SimilarProductItem from '../SimilarProductItem'
 import './index.css'
 
@@ -20,33 +21,22 @@ class ProductItemDetails extends Component {
     quantity: 1,
     apiStatus: apiStatusConstants.inProgress,
     errorMsg: '',
+    redirectToLogin: false,
   }
 
   componentDidMount() {
-    this.checkAuthentication()
-    this.getProductDetails()
-  }
-
-  checkAuthentication = () => {
     const jwtToken = Cookies.get('jwt_token')
     if (!jwtToken) {
       this.setState({redirectToLogin: true})
+    } else {
+      this.getProductDetails()
     }
   }
 
   getProductDetails = async () => {
-    const {match} = this.props
-    const {id} = match.params // Assuming you're using react-router and URL params for product id
-
-    if (!id) {
-      this.setState({
-        apiStatus: apiStatusConstants.failure,
-        errorMsg: 'Product ID is missing.',
-      })
-      return
-    }
-
     this.setState({apiStatus: apiStatusConstants.inProgress})
+    const {match} = this.props
+    const {id} = match.params
 
     const jwtToken = Cookies.get('jwt_token')
     const apiUrl = `https://apis.ccbp.in/products/${id}`
@@ -59,61 +49,44 @@ class ProductItemDetails extends Component {
 
     try {
       const response = await fetch(apiUrl, options)
-
       if (response.ok) {
-        const fetchedData = await response.json()
-
-        // Map each key from the response to the state
+        const data = await response.json()
         const updatedProductDetails = {
-          id: fetchedData.id,
-          imageUrl: fetchedData.image_url, // image_url mapped to imageUrl
-          title: fetchedData.title, // title mapped to title
-          price: fetchedData.price,
-          description: fetchedData.description,
-          brand: fetchedData.brand,
-          totalReviews: fetchedData.total_reviews, // total_reviews mapped to totalReviews
-          rating: fetchedData.rating,
-          availability: fetchedData.availability,
+          id: data.id,
+          imageUrl: data.image_url,
+          title: data.title,
+          price: data.price,
+          description: data.description,
+          brand: data.brand,
+          totalReviews: data.total_reviews,
+          rating: data.rating,
+          availability: data.availability,
         }
 
-        // Map the similar products
-        const updatedSimilarProducts = fetchedData.similar_products.map(
-          product => ({
-            id: product.id,
-            imageUrl: product.image_url, // image_url mapped to imageUrl
-            title: product.title, // title mapped to title
-            price: product.price,
-            description: product.description,
-            brand: product.brand,
-            totalReviews: product.total_reviews, // total_reviews mapped to totalReviews
-            rating: product.rating,
-            availability: product.availability,
-          }),
-        )
+        const updatedSimilarProducts = data.similar_products.map(item => ({
+          id: item.id,
+          imageUrl: item.image_url,
+          title: item.title,
+          price: item.price,
+          description: item.description,
+          brand: item.brand,
+          totalReviews: item.total_reviews,
+          rating: item.rating,
+          availability: item.availability,
+        }))
 
-        // Set the state
         this.setState({
           productdetails: updatedProductDetails,
           similarProducts: updatedSimilarProducts,
           apiStatus: apiStatusConstants.success,
         })
       } else if (response.status === 404) {
-        const errorData = await response.json()
-        this.setState({
-          apiStatus: apiStatusConstants.failure,
-          errorMsg: errorData.error_msg || 'Product not found.',
-        })
+        this.setState({apiStatus: apiStatusConstants.failure})
       } else {
-        this.setState({
-          apiStatus: apiStatusConstants.failure,
-          errorMsg: 'Something went wrong, please try again later.',
-        })
+        this.setState({apiStatus: apiStatusConstants.failure})
       }
     } catch (error) {
-      this.setState({
-        apiStatus: apiStatusConstants.failure,
-        errorMsg: 'Failed to fetch product details. Please try again later.',
-      })
+      this.setState({apiStatus: apiStatusConstants.failure})
     }
   }
 
@@ -129,86 +102,101 @@ class ProductItemDetails extends Component {
 
   handleContinueShopping = () => {
     const {history} = this.props
-    history.push('/products') // Redirect to Products Route
+    history.push('/products')
+  }
+
+  addToCart = () => {
+    const {productdetails, quantity} = this.state
+    const cart = JSON.parse(localStorage.getItem('cart')) || []
+
+    const existingIndex = cart.findIndex(item => item.id === productdetails.id)
+    if (existingIndex !== -1) {
+      cart[existingIndex].quantity += quantity
+    } else {
+      cart.push({...productdetails, quantity})
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }
+
+  renderLoadingView = () => (
+    <div className="product-loader" data-testid="loader">
+      <Loader type="ThreeDots" color="#0b69ff" height="50" width="50" />
+    </div>
+  )
+
+  renderFailureView = () => (
+    <div className="product-error-view">
+      <Header />
+      <img
+        src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-error-view-img.png"
+        alt="error view"
+      />
+      <h1>Product Not Found</h1>
+      <button type="button" onClick={this.handleContinueShopping}>
+        Continue Shopping
+      </button>
+    </div>
+  )
+
+  renderProductDetails = () => {
+    const {productdetails, quantity, similarProducts} = this.state
+
+    return (
+      <div>
+        <Header />
+        <div className="product-details">
+          <img
+            src={productdetails.imageUrl}
+            alt="product"
+            className="product_img"
+          />
+          <div>
+            <h1>{productdetails.title}</h1>
+            <p>{productdetails.description}</p>
+            <p>₹{productdetails.price}/-</p>
+            <p>Total Reviews: {productdetails.totalReviews}</p>
+            <p>Rating: {productdetails.rating}</p>
+            <p>Availability: {productdetails.availability}</p>
+            <p>Brand: {productdetails.brand}</p>
+
+            <div className="quantity-container">
+              <button data-testid="minus" onClick={this.decrementQuantity}>
+                <BsDashSquare size={24} />
+              </button>
+              <p>{quantity}</p>
+              <button data-testid="plus" onClick={this.incrementQuantity}>
+                <BsPlusSquare size={24} />
+              </button>
+            </div>
+
+            <button type="button" onClick={this.addToCart}>
+              ADD TO CART
+            </button>
+          </div>
+        </div>
+        <SimilarProductItem similarProducts={similarProducts} />
+      </div>
+    )
   }
 
   render() {
-    const {
-      productdetails,
-      similarProducts,
-      apiStatus,
-      quantity,
-      errorMsg,
-      redirectToLogin,
-    } = this.state
+    const {redirectToLogin, apiStatus} = this.state
 
     if (redirectToLogin) {
       return <Redirect to="/login" />
     }
 
-    if (apiStatus === apiStatusConstants.inProgress) {
-      return (
-        <div>
-          <Header />
-
-      <Loader dta-testid="loader" type="ThreeDots" color="#0b69ff" height="50" width="50" />        </div>
-      )
+    switch (apiStatus) {
+      case apiStatusConstants.inProgress:
+        return this.renderLoadingView()
+      case apiStatusConstants.failure:
+        return this.renderFailureView()
+      case apiStatusConstants.success:
+        return this.renderProductDetails()
+      default:
+        return null
     }
-
-    if (apiStatus === apiStatusConstants.failure) {
-      return (
-        <div>
-          <Header />
-          <h2>Failed to fetch product details</h2>
-          <p>{errorMsg}</p>
-          <button onClick={this.handleContinueShopping}>
-            Continue Shopping
-          </button>
-        </div>
-      )
-    }
-
-    return (
-      <div>
-        <Header />
-        {productdetails ? (
-          <div>
-            <div className="product-details">
-              <img
-                className="product_img"
-                src={productdetails.imageUrl}
-                alt="product"
-              />
-              <div>
-                <h1>{productdetails.title}</h1>
-                <p>{productdetails.description}</p>
-
-                <p>{productdetails.price}/-</p>
-                <p> {productdetails.rating}</p>
-                <p>{productdetails.category}</p>
-                <p>{productdetails.availability}</p>
-                <p> {productdetails.brand}</p>
-
-                <div>
-                  <button data-testid="plus" onClick={this.decrementQuantity}>
-                    -
-                  </button>
-                  <p>{quantity}</p>
-                  <button data-testid="minus" onClick={this.incrementQuantity}>
-                    +
-                  </button>
-                </div>
-                <button type="button">ADD TO CART</button>
-              </div>
-            </div>
-
-            <SimilarProductItem similarProducts={similarProducts} />
-          </div>
-        ) : (
-          <h2>Product Not Found</h2>
-        )}
-      </div>
-    )
   }
 }
 

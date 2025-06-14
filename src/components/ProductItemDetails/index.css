@@ -1,10 +1,104 @@
-/* Write your CSS here */
 .product-details {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  padding: 20px;
+  font-family: 'Roboto', sans-serif;
 }
+
+@media screen and (min-width: 768px) {
+  .product-details {
+    flex-direction: row;
+    gap: 32px;
+  }
+}
+
 .product_img {
-  width: 50%;
-  height: 50%;
-  margin-left: 20px 25px;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 10px;
+}
+
+.product-details > div {
+  flex: 1;
+}
+
+.product-details h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.product-details p {
+  margin: 6px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.quantity-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.quantity-container button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.quantity-container p {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+}
+
+button[type='button'] {
+  background-color: #0b69ff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button[type='button']:hover {
+  background-color: #094ec3;
+}
+
+/* Loader view */
+.product-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+}
+
+/* Error view */
+.product-error-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.product-error-view img {
+  width: 250px;
+  margin-bottom: 20px;
+}
+
+.product-error-view h1 {
+  font-size: 24px;
+  color: #333;
+}
+
+.product-error-view button {
+  margin-top: 12px;
+}
+
+/* SimilarProductItem override (if any needed) */
+.similar-products-container {
+  margin-top: 40px;
 }
