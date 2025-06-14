@@ -1,0 +1,10 @@
+/* Write your CSS here */
+.product-details {
+  display: flex;
+  align-items: center;
+}
+.product_img {
+  width: 50%;
+  height: 50%;
+  margin-left: 20px 25px;
+}
